@@ -11,21 +11,21 @@ import numpy as np
 class MismatchSVM():
 
     def __init__(self, dataset_id, k, m, k_l, m_l):
-        self.k = k
-        self.m = m
+
         self.dataset_id=dataset_id
         self.train_gram=None
         self.val_gram=None
         self.test_gram=None
         self.X=None
         self.Y=None
-        self.mismatch_matrice=None
         assert(dataset_id in [0,1,2])
         self.create_data()
         self.res=None
         self.training_acc=None
         self.k_l=k_l
         self.m_l=m_l
+        self.mismatch_matrice=None
+        self.eta=(1/len(k_l))*np.ones((len(k_l), 1))
 
     def create_data(self):
         if self.dataset_id==0:
@@ -44,19 +44,7 @@ class MismatchSVM():
         self.X=X
         self.Y=Y.values.squeeze()
 
-    def compute_mismatch_matrice(self, norm=False):
-        path= 'mismatch_matrices/data{}_k{}_m{}.npz'.format(self.dataset_id, self.k, self.m)
-        if os.path.isfile(path):
-            print("Loading mismatch matrix")
-            self.mismatch_matrice=sparse.load_npz(path)
-        else:
-            print("Computing mismatch matrix")
-            self.mismatch_matrice=mismatch_matrix(self.X,self.k , self.m)
-            sparse.save_npz(path, self.mismatch_matrice)
-        if norm:
-            self.mismatch_matrice = sparse.csr_matrix(self.mismatch_matrice / (sparse.linalg.norm(self.mismatch_matrice, axis=1)[:, None]))
-
-    def compute_mismatch_matrice_multi(self, norm=False, if_weight=False, weight=None):
+    def compute_mismatch_matrice_multi(self):
         nb_k=len(self.k_l)
         mism_matr_l=[]
         for i in range(nb_k):
@@ -66,21 +54,17 @@ class MismatchSVM():
             if os.path.isfile(path):
                 print("Loading mismatch matrix")
                 mism = sparse.load_npz(path)
-                if if_weight:
-                    mism= np.sqrt(weight[i])*mism
+                mism= np.sqrt(self.eta[i])*mism
+
                 mism_matr_l.append(mism)
             else:
                 print("Computing mismatch matrix")
                 mism = mismatch_matrix(self.X, k, m)
                 sparse.save_npz(path, mism)
-                if if_weight:
-                    mism= np.sqrt(weight[i])*mism
+                mism= np.sqrt(self.eta[i])*mism
                 mism_matr_l.append(mism)
 
-        self.mismatch_matrice=sparse.hstack(mism_matr_l, format="csr")
-        if norm:
-            self.mismatch_matrice = sparse.csr_matrix(
-                self.mismatch_matrice / (sparse.linalg.norm(self.mismatch_matrice, axis=1)[:, None]))
+        self.mismatch_matrice = sparse.hstack(mism_matr_l, format="csr")
 
     def svm_accuracy(self, mismatch_train, mismatch_val, y, y_val, lmbda):
 
@@ -210,40 +194,3 @@ if __name__ == '__main__':
     print(res_tr)
     print(res_val)
     print(res_val.mean(axis=1))
-
-#    mism_train,mism_val=mism.mismatch_matrice[:1600,:], mism.mismatch_matrice[1600:,:]
-#    y_train,y_val=mism.Y[:1600], mism.Y[1600:]
- #   print(mism.svm_accuracy(mism_train,mism_val , y_train, y_val, 1.2))
-
-"""   pred_list=[]
-
-    X_0_test = pd.read_csv('data/Xte0.csv', index_col=0).reset_index(drop=True)
-
-    mism=MismatchSVM(dataset_id=0, k=5, m=1,k_l=[8,7], m_l=[2,0])
-    mism.compute_mismatch_matrice_multi(norm=False)
-    mism.fit(lmbda=1)
-    print(mism.training_acc)
-    pred_0=mism.predict_multi(X_0_test)
-    pred_list.append(pred_0)
-
-    X_1_test = pd.read_csv('data/Xte1.csv', index_col=0).reset_index(drop=True)
-
-    mism = MismatchSVM(dataset_id=1, k=5, m=1, k_l=[8, 5], m_l=[2, 1])
-    mism.compute_mismatch_matrice_multi(norm=False)
-    mism.fit(lmbda=1.7)
-    print(mism.training_acc)
-    pred_1 = mism.predict_multi(X_1_test)
-    pred_list.append(pred_1)
-
-    X_2_test = pd.read_csv('data/Xte2.csv', index_col=0).reset_index(drop=True)
-
-    mism = MismatchSVM(dataset_id=2, k=5, m=1, k_l=[8, 5], m_l=[2, 1])
-    mism.compute_mismatch_matrice_multi(norm=False)
-    mism.fit(lmbda=1)
-    print(mism.training_acc)
-    pred_2 = mism.predict_multi(X_2_test)
-    pred_list.append(pred_2)
-
-    to_submit = pd.DataFrame(np.concatenate(pred_list)).reset_index().rename(columns={'index': 'Id', 0: 'Bound'})
-    to_submit.loc[to_submit.Bound == -1, 'Bound'] = 0
-    to_submit.to_csv('to_submit_8.csv', sep=',', index=False, header=True)"""
