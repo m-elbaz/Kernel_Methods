@@ -1,4 +1,4 @@
-from mismatch_kernel import mismatch_matrix
+from mismatch_utils import mismatch_matrix
 import os.path
 from scipy import sparse
 import pandas as pd

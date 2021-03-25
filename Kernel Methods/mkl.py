@@ -1,4 +1,4 @@
-from mismatch_kernel import mismatch_matrix
+from mismatch_utils import mismatch_matrix
 import os.path
 import scipy as sp
 from scipy import sparse
