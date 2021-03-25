@@ -49,6 +49,9 @@ class MismatchSVM():
         """ For given kernel lists, computes/loads  sparse feauture matrices
         and concatenates them with possible weights and normalization"""
 
+        if not os.path.exists('mismatch_matrices'):
+            os.makedirs('mismatch_matrices')
+
         nb_k = len(self.k_l)
         mism_matr_l = []
         for i in range(nb_k):
@@ -111,7 +114,7 @@ class MismatchSVM():
         return acc_train, acc_val
 
     def lmbda_Nfold(self, N_fold, lmbda_l):
-        """ Function that helps tunning the hyperparameters using cross-validation
+        """ Function that helps tune the hyperparameters using cross-validation
         Takes a list of lambdas to be tested and the number of Folds
         Outputs training and validation accuracies for every Fold and lambda """
         res_tr = pd.DataFrame(index=lmbda_l, columns=range(N_fold))
