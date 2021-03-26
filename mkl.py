@@ -1,6 +1,5 @@
 from mismatch_utils import mismatch_matrix
 import os.path
-import scipy as sp
 from scipy import sparse
 import pandas as pd
 import cvxpy as cp
