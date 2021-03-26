@@ -53,8 +53,8 @@ class MKL_SVM():
         """ For given kernel lists, computes/loads  sparse feauture matrices
          with possible normalization and stores them in mism_l"""
 
-        if not os.path.exists('Kernel Methods/mismatch_matrices'):
-            os.makedirs('Kernel Methods/mismatch_matrices')
+        if not os.path.exists('mismatch_matrices'):
+            os.makedirs('mismatch_matrices')
 
         nb_k = len(self.k_l)
         mism_l = []

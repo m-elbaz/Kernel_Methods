@@ -1,2 +1,5 @@
+venv
+Kernel Methods/.idea
 .idea
-.DS_Store
+../data
+__pycache__/
